@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <script src="node_modules/simple-peer/simplepeer.min.js"></script>
+    <title>gpgshare</title>
+  </head>
+  <body>
+    <h1>gpgshare</h1>
+
+    <ul>
+    
+      <li><a href="gpgfs:///alanm@roshub.io/local/">gpgfs:///alanm@roshub.io/local/</a></li>
+      <li><a href="gpgfs:///alanm@roshub.io/remote/">gpgfs:///alanm@roshub.io/remote/</a></li>
+      <li><a href="gpgfs:///alanm@roshub.io/sync/">gpgfs:///alanm@roshub.io/sync/</a></li>
+    </ul>
+
+
+  <pre>
+    * Activity Summary
+    * Users / Domains Listing
+    * Collections/ Projects Listing
+      - Add {volume, bucket, folder, file}
+      - Share
+    * Volume Listing
+      - Share
+      - Mount
+      - Sync
+      - Create Bucket
+    * Bucket Listing
+      - Share
+      - Mount
+      - Sync
+    * Folder Listing
+    * File Info / Actions
+      - Share
+      - Mount
+      - Download
+      - Sync
+    * Privacy
+      - Private
+      - Shared
+      - Public
+  </pre>
+
+    <!--
+    gpgfs:// / {email} / {type} / {volume-name-or-id} / {bucket-name-or-id} / {...path}
+    gpgfs:// / volumes / {type} /  {volume-name-or-id} / {bucket-name-or-id} / {...path}
+    gpgfs:// / volumes / {type} / {owner} /  {volume-name-or-id} / {bucket-name-or-id} / {...path}
+
+  -->
+
+  <h4>gpgfs:// / volumes / {type} / {owner} /  {volume-name-or-id} / {bucket-name-or-id} / {...path}</h2>
+  
+    <!-- You can also require other files to run in this process -->
+    <script src="./renderer.js"></script>
+  </body>
+</html>
