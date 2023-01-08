@@ -6,8 +6,7 @@ const debug = require('debug')('gpgshare')
 const Gpgfs = require('gpgfs')
 const GPG = Gpgfs.GPG
 const url = require('url')
-const WRTC = require('wrtc')
-const SimplePeer = require('simple-peer')
+const path = require('path')
 
 function createWindow () {
   // Create the browser window.
@@ -17,7 +16,8 @@ function createWindow () {
     width: 600,
     height: 400,
     webPreferences:{
-      nodeIntegration: true
+      nodeIntegration: true,
+      contextIsolation: false
     }
   })
 
@@ -25,7 +25,7 @@ function createWindow () {
 
   
   //mainWindow.setMenu(null)
-  mainWindow.loadFile('index.html')
+  mainWindow.loadFile(path.join(__dirname, 'app/index.html'))
 
 
   // and load the index.html of the app.
