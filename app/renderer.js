@@ -6,6 +6,79 @@
 // process.
 
 
-const electron = require('electron');
+const electron = require('electron')
+const EventEmitter = require('events')
+
+
 
 console.log(electron.ipcRenderer)
+
+const GuiSchema = require('../dataparty/gpgshare.dataparty-schema.json')
+
+console.log(GuiSchema)
+
+class ElectronChannel extends EventEmitter {
+  constructor(channel){
+    super()
+    this.channel = channel
+  }
+
+  on(type, fn){
+    this.channel.on(type, (event,...args)=>{
+      fn(args)
+    })
+  }
+
+  post(type, msg){
+    this.channel.postMessage(type, msg)
+  }
+}
+
+class Gui {
+  constructor(){
+    this.channel = new ElectronChannel(electron.ipcRenderer)
+    this.comms = new Dataparty.Comms.LoopbackComms({
+      channel: this.channel
+    })
+  
+    this.config = new Dataparty.Config.MemoryConfig()
+    this. peer = null
+
+    window.onload = async ()=>{ this.onload() }
+
+    electron.ipcRenderer.on('main-identity', this.onMainIdentity.bind(this))
+  }
+
+  async onload(){
+    console.log('on load')
+
+    await this.config.start()
+  
+    this.peer = new Dataparty.PeerParty({
+      comms: this.comms,
+      model: GuiSchema,
+      config: this.config
+    })
+  
+    await this.peer.loadIdentity()
+  
+    electron.ipcRenderer.postMessage('gui-identity', this.peer.identity)
+  }
+
+  async onMainIdentity(event, id){
+    this.comms.remoteIdentity = id
+
+    await this.peer.start()
+
+
+    console.log('waiting for auth')
+    await Promise.all([
+      this.comms.authorized()
+    ])
+    
+    console.log('authed')
+  }
+}
+
+
+window.gui = new Gui()

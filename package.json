@@ -18,9 +18,10 @@
     }
   },
   "scripts": {
-    "start": "DEBUG=gpgshare,gpgshare.* electron index.js",
+    "start": "DEBUG=gpgshare,gpgshare.*,dataparty.* electron index.js",
     "old-build": "parcel build --no-content-hash --no-scope-hoist --public-url ./ --dist-dir ./dist ./app/index.html",
-    "build": "parcel build --dist-dir ./dist",
+    "build": "npm run build-party; parcel build --dist-dir ./dist",
+    "build-party": "node party/build.js",
     "electron-start": "npm run build; electron-forge start",
     "electron-package": "npm run build; electron-forge package",
     "electron-make": "npm run build; electron-forge make",

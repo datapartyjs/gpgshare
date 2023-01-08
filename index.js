@@ -7,79 +7,158 @@ const Gpgfs = require('gpgfs')
 const GPG = Gpgfs.GPG
 const url = require('url')
 const path = require('path')
+const EventEmitter = require('events')
+const Dataparty = require('@dataparty/api/src/index')
 
-function createWindow () {
-  // Create the browser window.
-  debug('create window')
-  let mainWindow = new BrowserWindow({
-    frame: true,
-    width: 600,
-    height: 400,
-    webPreferences:{
-      nodeIntegration: true,
-      contextIsolation: false
-    }
-  })
 
+const GuiSchema = require('./dataparty/gpgshare.dataparty-schema.json')
+
+
+
+class ElectronChannel extends EventEmitter {
+  constructor(window){
+    super()
+    this.window = window
+  }
+
+  on(type, fn){
+    ipcMain.on(type, (event,...args)=>{
+      fn(args)
+    })
+  }
+
+  post(type, msg){
+    this.window.webContents.send(type, msg)
+  }
+}
+
+class AppGui {
+  constructor(){
+    this.ramConfig = new Dataparty.Config.MemoryConfig()
+    this.channel = null
+    this.guiComms = null
+    this.hostLocal = null
+    this.guiPeer = null
+
+    this.window = null
+
+    this.keychainPath = os.homedir()+'/.gnupg'
+    debug('keychain', this.keychainPath)
+    this.keychain = new GPG.KeyChain(this.keychainPath)
+  }
+
+  async start(){
+    console.log('start')
   
+    await Promise.all([
+      this.keychain.open(),
+      app.whenReady()
+    ])
 
+    this.window = new BrowserWindow({
+      frame: true,
+      width: 600,
+      height: 400,
+      webPreferences:{
+        nodeIntegration: true,
+        contextIsolation: false
+      }
+    })
   
-  //mainWindow.setMenu(null)
-  mainWindow.loadFile(path.join(__dirname, 'app/index.html'))
-
-
-  // and load the index.html of the app.
+    
+    this.window.setMenu(null)
+    this.window.loadFile(path.join(__dirname, 'app/index.html'))
   
-
-  //mainWindow.show()
-
   
-  //mainWindow.focus(); // focus the window up front on the active screen
-  //mainWindow.setVisibleOnAllWorkspaces(false); // disable all screen behavior
-  //mainWindow.setVisibleOnAllWorkspaces(true); // put the window on all screens
+  
+    const {x, y} = screen.getCursorScreenPoint();
+    // Find the display where the mouse cursor will be
+    const currentDisplay = screen.getDisplayNearestPoint({ x, y });
+    // Set window position to that display coordinates
+    this.window.setPosition(currentDisplay. workArea.x, currentDisplay. workArea.y);
+    // Center window relatively to that display
+    this.window.center();
+    // Display the window
+    this.window.show();
+  
+  
+    // Open the DevTools.
+    this.window.webContents.openDevTools()
 
-  const {x, y} = screen.getCursorScreenPoint();
-  // Find the display where the mouse cursor will be
-  const currentDisplay = screen.getDisplayNearestPoint({ x, y });
-  // Set window position to that display coordinates
-  mainWindow.setPosition(currentDisplay. workArea.x, currentDisplay. workArea.y);
-  // Center window relatively to that display
-  mainWindow.center();
-  // Display the window
-  mainWindow.show();
+    ipcMain.once('gui-identity', async (event, id)=>{
+      console.log('on gui identity', id)
+      await this.onGuiReady(id)
+    })
+    
+    debug('publics ultimate', await this.keychain.listPublicKeys(true))
+  
+    debug('whoami', await this.keychain.whoami())
 
+    protocol.registerBufferProtocol('gpgfs', (request, callback) => {
+      debug('protocol request', request.url, JSON.stringify( url.parse(request.url), null, 2 ))
+      callback({ mimeType: 'text/html', data: Buffer.from('<h5>Response</h5>') })
+    }, (error) => {
+      if (error) console.error('Failed to register protocol')
+    })
+  }
 
-  // Open the DevTools.
-   mainWindow.webContents.openDevTools()
+  async onGuiReady(identity){
 
-  return mainWindow
+    this.channel = new ElectronChannel(this.window)
+
+    this.guiComms = new Dataparty.Comms.LoopbackComms({
+      host: true,
+      channel: this.channel,
+      //remoteIdentity: identity
+    })
+
+    
+
+    this.hostLocal = new Dataparty.LokiParty({
+      path: './gpgfs-gui.db',
+      model: GuiSchema,
+      config: this.ramConfig,
+      //dbAdapter: Dataparty.Bouncer.LokiDb.LokiLocalStorageAdapter
+    })
+
+    await this.ramConfig.start()
+
+    this.guiPeer = new Dataparty.PeerParty({
+      comms: this.guiComms,
+      hostParty: this.hostLocal,
+      model: GuiSchema,
+      config: this.ramConfig
+    })
+  
+    await this.guiPeer.loadIdentity()
+
+    this.window.webContents.send('main-identity', this.guiPeer.identity)
+  
+    console.log('main identity', this.guiPeer.identity)
+
+    this.guiPeer.start()
+
+    console.log('waiting for auth')
+    await Promise.all([
+      this.guiComms.authorized()
+    ])
+    
+    console.log('authed')
+  
+  }
 }
 
 
+
+
+
+
 async function main(){
-  const keychainPath = os.homedir()+'/.gnupg'
-  debug('keychain', keychainPath)
-  const keychain = new GPG.KeyChain(keychainPath)
 
-  await Promise.all([
-    keychain.open(),
-    app.whenReady()
-  ])
+  let gui = new AppGui()
 
-  debug('creating window')
+  await gui.start()
 
-  let mainWindow = createWindow()
-  
-  debug('publics ultimate', await keychain.listPublicKeys(true))
-
-  debug('whoami', await keychain.whoami())
-
-  protocol.registerBufferProtocol('gpgfs', (request, callback) => {
-    debug('protocol request', request.url, JSON.stringify( url.parse(request.url), null, 2 ))
-    callback({ mimeType: 'text/html', data: Buffer.from('<h5>Response</h5>') })
-  }, (error) => {
-    if (error) console.error('Failed to register protocol')
-  })
 
   // Quit when all windows are closed.
   app.on('window-all-closed', function () {
@@ -93,43 +172,7 @@ async function main(){
     debug('on active')
     // On macOS it's common to re-create a window in the app when the
     // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-
-  ipcMain.on('peer-available', (event, data) => {
-    debug('peer-available', event)
-
-
-    const peer = new SimplePeer({
-      initiator: true,
-      trickle: false,
-      wrtc: WRTC
-    })
-    
-    
-    peer.on('error', err=>{
-      debug('peer-error', err)
-    })
-    
-    peer.on('signal', data=>{
-      //sned to parent
-      mainWindow.webContents.send('peer-client-signal', data)
-      debug('tx-signal',data)
-    })
-    
-    peer.on('data', data=>{
-      debug('data',data)
-    })
-
-    peer.on('connect', () => {
-      debug('connected, sending hello')
-      peer.send('hey peer2, how is it going?')
-    })
-
-    ipcMain.on('peer-client-signal', (event, data) => {
-      debug('rx-signal', data)
-      peer.signal(data)
-    })
+    //if (BrowserWindow.getAllWindows().length === 0) createWindow()
   })
 
 
