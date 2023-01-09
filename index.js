@@ -67,7 +67,7 @@ class AppGui {
   
     
     this.window.setMenu(null)
-    this.window.loadFile(path.join(__dirname, 'app/index.html'))
+    this.window.loadFile(path.join(__dirname, 'dist/index.html'))
   
   
   
@@ -109,7 +109,7 @@ class AppGui {
     this.guiComms = new Dataparty.Comms.LoopbackComms({
       host: true,
       channel: this.channel,
-      //remoteIdentity: identity
+      remoteIdentity: identity
     })
 
     
@@ -118,8 +118,14 @@ class AppGui {
       path: './gpgfs-gui.db',
       model: GuiSchema,
       config: this.ramConfig,
-      //dbAdapter: Dataparty.Bouncer.LokiDb.LokiLocalStorageAdapter
+      dbAdapter: 0
+      //dbAdapter: Dataparty.Bouncer.LokiDb.LokiLocalStorageAdapter()
     })
+
+    //this.hostLocal.db.dbAdapter = null
+    console.log('local dbadapter', this.hostLocal.db.dbAdapter)
+
+    //process.exit()
 
     await this.ramConfig.start()
 
