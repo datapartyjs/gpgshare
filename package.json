@@ -8,7 +8,7 @@
     "frontend": {
       "context": "electron-renderer",
       "source": "app/index.html",
-      "optimize": false,
+      "optimize": true,
       "publicUrl": "./",
       "scopeHoist": false,
       "sourceMap": true,
@@ -21,7 +21,7 @@
   "scripts": {
     "start": "DEBUG=gpgshare,gpgshare.*,dataparty.* electron index.js",
     "old-build": "parcel build --no-content-hash --no-scope-hoist --public-url ./ --dist-dir ./dist ./app/index.html",
-    "build": "npm run build-party; parcel build --dist-dir ./dist",
+    "build": "parcel build --dist-dir ./dist",
     "build-party": "node party/build.js",
     "electron-start": "npm run build; electron-forge start",
     "electron-package": "npm run build; electron-forge package",
@@ -30,10 +30,12 @@
   },
   "dependencies": {
     "@dataparty/api": "datapartyjs/dataparty-api",
+    "buffer": "^5.5.0",
     "debug": "^4.3.3",
     "electron": "22.0.0",
-    "gpgfs": "^0.5.11",
-    "buffer": "^5.5.0"
+    "eventemitter3": "^5.0.0",
+    "events": "^3.3.0",
+    "gpgfs": "^0.5.11"
   },
   "author": "Dataparty",
   "license": "Apache-2.0",
@@ -47,8 +49,6 @@
     "@electron-forge/maker-zip": "^6.0.0-beta.63",
     "@parcel/packager-raw-url": "^2.5.0",
     "@parcel/transformer-jsonld": "^2.5.0",
-
-    "events": "^3.3.0",
     "http-server": "^14.1.0",
     "parcel": "^2.8.2",
     "path-browserify": "^1.0.1",
