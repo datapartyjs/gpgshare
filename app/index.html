@@ -5,8 +5,10 @@
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
     <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <script src="node_modules/simple-peer/simplepeer.min.js"></script>
     <title>gpgshare</title>
+
+    <script src="../node_modules/@dataparty/api/dist/dataparty-browser.js"></script>
+    <script src="./renderer.js" type="module"></script>
   </head>
   <body>
     <h1>gpgshare</h1>
@@ -55,7 +57,5 @@
 
   <h4>gpgfs:// / volumes / {type} / {owner} /  {volume-name-or-id} / {bucket-name-or-id} / {...path}</h2>
   
-    <!-- You can also require other files to run in this process -->
-    <script src="./renderer.js"></script>
   </body>
 </html>
