@@ -1,7 +1,7 @@
 {
   "name": "gpgshare",
   "productName": "gpgshare",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "encrypted file storage solution utilizing gnupg",
   "frontend": "./dist/index.html",
   "targets": {
@@ -29,28 +29,30 @@
     "electron-publish": "electron-forge publish"
   },
   "dependencies": {
-    "@dataparty/api": "datapartyjs/dataparty-api",
+    "@dataparty/api": "datapartyjs/dataparty-api#protocol-updates",
     "buffer": "^5.5.0",
     "debug": "^4.3.3",
-    "electron": "22.0.0",
     "eventemitter3": "^5.0.0",
     "events": "^3.3.0",
-    "gpgfs": "^0.5.11"
+    "gpgfs": "^0.5.11",
+    "human-crypto-keys": "^0.1.4",
+    "node-abi": "^3.33.0",
+    "node-forge": "^1.3.1"
   },
   "author": "Dataparty",
   "license": "Apache-2.0",
   "devDependencies": {
     "@davidwinter/electron-forge-maker-snap": "^2.0.7",
-    "@electron-forge/cli": "^6.0.0-beta.63",
-    "@electron-forge/maker-deb": "^6.0.0-beta.63",
-    "@electron-forge/maker-rpm": "^6.0.0-beta.63",
-    "@electron-forge/maker-snap": "^6.0.0-beta.63",
-    "@electron-forge/maker-squirrel": "^6.0.0-beta.63",
-    "@electron-forge/maker-zip": "^6.0.0-beta.63",
+    "@electron-forge/cli": "^6.0.5",
+    "@electron-forge/maker-deb": "^6.0.5",
+    "@electron-forge/maker-rpm": "^6.0.5",
+    "@electron-forge/maker-snap": "^6.0.5",
+    "@electron-forge/maker-squirrel": "^6.0.5",
+    "@electron-forge/maker-zip": "^6.0.5",
     "@parcel/packager-raw-url": "^2.5.0",
     "@parcel/transformer-jsonld": "^2.5.0",
-    "http-server": "^14.1.0",
-    "parcel": "^2.8.2",
+    "electron": "23.1.2",
+    "parcel": "^2.8.3",
     "path-browserify": "^1.0.1",
     "process": "^0.11.10",
     "stream-browserify": "^3.0.0"
